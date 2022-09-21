@@ -1,0 +1,15 @@
+挂断回调消息:
+Request Body=[{"status_code":"200000","hangup_direction":"用户","callee":"18622436962","end_time":"2021-04-07 09:21:05",
+    "ring_time":"2021-04-07 09:20:52","call_id":"122393319985^109186914985","duration":"9","start_time":"2021-04-07 09:20:56",
+    "caller":"02386132408","voice_type":"voice","status_msg":"","originate_time":"2021-04-07 09:20:50","out_id":"","toll_type":"DOMESTIC"}]
+机器挂断：
+Request Body=[{"status_code":"200000","hangup_direction":"机器","callee":"18622436962","end_time":"2021-04-07 09:48:00","ring_time":"2021-04-07 09:47:40","call_id":"122393828752^109187423752","duration":"17","start_time":"2021-04-07 09:47:44","caller":"02388637428","voice_type":"voice","status_msg":"","originate_time":"2021-04-07 09:47:37","out_id":"","toll_type":"DOMESTIC"}]
+未接听：
+Request Body=[{"duration":"0","caller":"057126883325","voice_type":"voice","status_code":"200003","callee":"17633394359",
+    "end_time":"2021-04-07 09:50:04","status_msg":"","ring_time":"2021-04-07 09:49:07","originate_time":"2021-04-07 09:49:04",
+    "out_id":"","toll_type":"DOMESTIC","call_id":"122393709860^109187304860"}]
+
+拒绝接听：
+Request Body=[{"duration":"0","caller":"02388395428","voice_type":"voice","status_code":"200002","callee":"17633394359",
+"end_time":"2021-04-07 09:51:28","status_msg":"","ring_time":"2021-04-07 09:50:52","originate_time":"2021-04-07 09:50:49",
+"out_id":"","toll_type":"DOMESTIC","call_id":"122393903696^109187498696"}]
