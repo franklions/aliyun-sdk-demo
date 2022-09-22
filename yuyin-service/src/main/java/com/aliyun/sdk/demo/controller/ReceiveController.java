@@ -53,7 +53,7 @@ public class ReceiveController {
      */
     @PostMapping("/calltts")
     public SingleCallByTtsResponse callPhone(@RequestBody CallTtsRequest req) throws Exception {
-        Client client = createClient("LTAI5tJdZakUJpXPD6VaMJfT", "uPivBFVf2I0gguYU6IXQXeNdvEFokY");
+        Client client = createClient("", "");
         SingleCallByTtsRequest request = SingleCallByTtsRequest.build(TeaConverter.buildMap(
                 // 被叫显号，若您使用的模板为公共号池号码外呼模板，则该字段值必须为空；
                 // 若您使用的模板为专属号码外呼模板，则必须传入已购买的号码，仅支持一个号码，您可以在语音服务控制台上查看已购买的号码。
@@ -82,7 +82,7 @@ public class ReceiveController {
     @GetMapping("/query/calldetail")
     public QueryCallDetailByCallIdResponse queryCallData(@RequestParam("callid") String callid,
                                                          @RequestParam("prodid") Long prodId) throws Exception {
-        Client client = createClient("LTAI5tJdZakUJpXPD6VaMJfT", "uPivBFVf2I0gguYU6IXQXeNdvEFokY");
+        Client client = createClient("", "");
         QueryCallDetailByCallIdRequest request = QueryCallDetailByCallIdRequest.build(TeaConverter.buildMap(
 
                 new TeaPair("callId",callid),
