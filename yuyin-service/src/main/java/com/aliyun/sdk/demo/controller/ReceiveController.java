@@ -6,6 +6,7 @@ import com.aliyun.dyvmsapi20170525.models.QueryCallDetailByCallIdResponse;
 import com.aliyun.dyvmsapi20170525.models.SingleCallByTtsRequest;
 import com.aliyun.dyvmsapi20170525.models.SingleCallByTtsResponse;
 import com.aliyun.sdk.demo.domain.CallTtsRequest;
+import com.aliyun.sdk.demo.domain.QueryCallDetailData;
 import com.aliyun.tea.TeaConverter;
 import com.aliyun.tea.TeaPair;
 import com.aliyun.teaopenapi.models.Config;
@@ -52,7 +53,7 @@ public class ReceiveController {
      * @throws Exception
      */
     @PostMapping("/calltts")
-    public SingleCallByTtsResponse callPhone(@RequestBody CallTtsRequest req) throws Exception {
+    public QueryCallDetailByCallIdResponse callPhone(@RequestBody CallTtsRequest req) throws Exception {
         Client client = createClient("", "");
         SingleCallByTtsRequest request = SingleCallByTtsRequest.build(TeaConverter.buildMap(
                 // 被叫显号，若您使用的模板为公共号池号码外呼模板，则该字段值必须为空；
@@ -66,7 +67,72 @@ public class ReceiveController {
         ));
 
         SingleCallByTtsResponse response = client.singleCallByTts(request);
-        return response;
+
+
+//            QueryCallDetailByCallIdRequest queryRequest = QueryCallDetailByCallIdRequest.build(TeaConverter.buildMap(
+//
+//                    new TeaPair("callId",response.getBody().getCallId()),
+//                    new TeaPair("prodId", "11000000300006"),
+//                    new TeaPair("queryDate",System.currentTimeMillis())
+//            ));
+//
+//            QueryCallDetailByCallIdResponse queryResponse = client.queryCallDetailByCallId(queryRequest);
+        boolean nextContact=false;
+        QueryCallDetailByCallIdResponse returnResponse =null;
+//查询通话结果，最长等待一分钟，每秒查询一次 QPS 单用户调用频率：100次/秒。 最多支持100个用户查询
+        if(response.getBody().callId==null){
+            logger.warn("用户被流控不能拔打电话："+response.getBody().getMessage());
+            return null;
+        }
+        for (int i = 0; i < 60; i++) {
+
+            QueryCallDetailByCallIdRequest queryRequest = QueryCallDetailByCallIdRequest.build(TeaConverter.buildMap(
+//
+                    new TeaPair("callId",response.getBody().getCallId()),
+                    new TeaPair("prodId", "11000000300006"),
+                    new TeaPair("queryDate",System.currentTimeMillis())
+            ));
+          QueryCallDetailByCallIdResponse queryResponse = client.queryCallDetailByCallId(queryRequest);
+            if(queryResponse.body.code.equals("OK")){
+                QueryCallDetailData callData = objectMapper.readValue(queryResponse.body.data, QueryCallDetailData.class);
+                switch (callData.getState()){
+                    case "200":
+                        //播打成功，未接听,等待1秒后再查
+                        break;
+                    case "200000":
+                    case "200001":
+                        //播打成功，结束线程
+                        logger.info("拔打成功");
+                        return queryResponse;
+                    case "200002":
+                    case "200003":
+                    case "200004":
+                    case "200005":
+                    case "200006":
+                    case "200007":
+                        //用户占线,用户收到呼叫但未接听,用户号码不合法,用户无法接通（拒绝）,语音播放失败铃声格式有误,用户无法接通（不在服务区）
+                        //更换用户继续播打电话
+                        nextContact=true;
+                        break;
+                    default:
+                        logger.warn("未知的呼叫结果状态码："+callData.toString());
+                        nextContact=true;
+                }
+
+                if(nextContact){
+                    //退出查询循环,继续播打电话
+                    returnResponse = queryResponse;
+                    logger.info("用户未接听，继续拔打下一个.");
+                    break;
+                }
+            }
+            //等待一秒
+            Thread.sleep(1000);
+            System.out.println("运行时间：>>>>"+i);
+        }
+
+
+        return returnResponse;
     }
 
     /**
@@ -91,6 +157,7 @@ public class ReceiveController {
         ));
 
         QueryCallDetailByCallIdResponse response = client.queryCallDetailByCallId(request);
+
         return response;
     }
 
